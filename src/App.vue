@@ -3,7 +3,7 @@
     <div class="content">
       <div class="content-header">
         <div class="padding">
-          <h1>Welcome</h1>
+          <h1>Welcomea</h1>
         </div>
       </div>
       <div class="content-main">
@@ -28,7 +28,7 @@
       onSetColor() {
         window.Excel.run(async context => {
           const range = context.workbook.getSelectedRange();
-          range.format.fill.color = 'green';
+          range.format.fill.color = 'blue';
           await context.sync();
         });
       }
