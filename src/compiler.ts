@@ -1,12 +1,9 @@
 import { generateCustomFunctionsMetadata } from "custom-functions-metadata";
-import { type RollupOptions, rollup } from "rollup";
-import rts from "rollup-plugin-typescript2";
 import { Plugin } from "vite";
 import fs from "fs";
 import path from "path";
-import ts from "typescript";
 
-async function outJsonFile(source: string) {
+async function outJsonFile(source: string[]) {
   let jsFuncs: string[] = [];
   await generateCustomFunctionsMetadata(source, true).then(
     ({ associate, metadataJson }) => {
@@ -14,19 +11,28 @@ async function outJsonFile(source: string) {
         return `\nCustomFunctions.associate("${func.id}", ${func.functionName})`;
       });
       const jsonContent = metadataJson.toString();
-      fs.writeFile("./public/functions.json", jsonContent, (err) => err?console.log(err):null );
+      fs.writeFile("./public/functions.json", jsonContent, (err) =>
+        err ? console.log(err) : null
+      );
     }
   );
   return jsFuncs;
 }
 
-export default function excelAddin(): Plugin {
+export function excelAddin(): Plugin {
   return {
     name: "rollup-plugin-excelAddin",
+    enforce: "pre",
     async transform(code, id) {
-      if (id.endsWith("functions.ts")||id.endsWith("commands.ts")) {
-        const jsFuncs = await outJsonFile(id);
-        return code + jsFuncs.join();
+      code
+      if (id.endsWith("/functions/functions.ts")) {
+        const dir = path.dirname(id);
+        const files = fs.readdirSync(dir).map((f) => path.resolve(dir, f));
+        let sourceCode = files
+          .map((f) => fs.readFileSync(f, "utf8"))
+          .join("\n");
+        const jsFuncs = await outJsonFile(files);
+        return sourceCode + jsFuncs.join();
       }
     },
   };

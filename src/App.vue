@@ -3,62 +3,105 @@
     <div class="content">
       <div class="content-header">
         <div class="padding">
-          <h1>Welcomea</h1>
+          <h1>欢迎</h1>
         </div>
       </div>
       <div class="content-main">
         <div class="padding">
           <p>
-            Choose the button below to set the color of the selected range to
-            green.
+            点击下面的按钮设置单元格为自定义颜色
           </p>
           <br />
-          <h3>Try it out</h3>
-          <button @click="onSetColor">Set color</button>
+          <h3>尝试一下</h3>
+          <button @click="onSetColor">设置颜色</button>
+          <input type="button" value="合并" @click="Vmerge">
+          <input type="button" value="fetch" @click="fetchWeb">
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-  export default {
-    name: 'App',
-    methods: {
-      onSetColor() {
-        window.Excel.run(async context => {
-          const range = context.workbook.getSelectedRange();
-          range.format.fill.color = 'blue';
-          await context.sync();
-        });
+<script setup lang="ts">
+
+function onSetColor() {
+  window.Excel.run(async context => {
+    const range = context.workbook.getSelectedRange();
+    range.format.fill.color = 'yellow';
+    await context.sync();
+  });
+}
+
+function Vmerge() {
+  Excel.run(async (context) => {
+    let activeRange = context.workbook.getSelectedRange();
+    activeRange.load(["address","rowCount","columnCount","values"])
+    await context.sync();
+    const {rowCount,columnCount,values} = activeRange
+    for(let col=0; col<columnCount;col++)
+    {
+      let postCell = activeRange.getAbsoluteResizedRange(1,1).getOffsetRange(0,col);
+      let celVal=values[0][col];
+      let stepPos=0;
+      for(let row = 1;row <rowCount;row++)
+      {
+        if(values[row][col]===celVal && row ===rowCount-1)
+        {
+          postCell.getResizedRange(row-stepPos,0).merge();
+          break;
+        }
+        if(values[row][col]===celVal) continue;
+        if(values[row][col]!==celVal) {
+          postCell.getResizedRange(row-1-stepPos,0).merge();
+          celVal=values[row][col];
+          postCell = postCell.getOffsetRange(row-stepPos,0);
+          stepPos=row
+        }
       }
     }
-  };
+    await context.sync()
+  });
+}
+
+async function fetchWeb() {
+  Excel.run(async () => {
+    const response = await fetch("https://www.bing.com/")
+    if (!response.ok) {
+      console.log("err:");
+      throw new Error(response.statusText)
+    }
+    const log = await response.text();
+    console.log(log);
+    
+      
+  })
+}
+
 </script>
 
 <style>
-  .content-header {
-    background: #2a8dd4;
-    color: #fff;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 80px;
-    overflow: hidden;
-  }
+.content {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: stretch;
+}
 
-  .content-main {
-    background: #fff;
-    position: fixed;
-    top: 80px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow: auto;
-  }
+.content-header {
+  background: #207ab9;
+  color: #fff;
+}
 
-  .padding {
-    padding: 15px;
-  }
+.content-main {
+  background: #fff;
+
+}
+
+.padding {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+}
 </style>

@@ -1,2 +1,6 @@
 /// <reference types="vite/client" />
-declare module "*.vue"
+
+declare interface Window {
+  sharedState: string;
+  sharedNum:number
+}
