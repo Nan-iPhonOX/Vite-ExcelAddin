@@ -1,16 +1,24 @@
 /* global clearInterval, console, CustomFunctions, setInterval */
 
+import { defineComponent } from "vue";
+
 window.sharedState = "empty";
 
 /**
- * 将两个数字相加。
- * @customfunction
- * @param第一个数字
- * @param第二个 第二个数字
- * @returns 两个数字的总和。
- */
-export function add(first: number, second: number): number {
-  return first +second;
+* 所有数字的总和。
+* @customfunction
+* @param 操作数 一个数字（如 1 或 3.1415）、单元格地址（如 A1 或 $E$11）或单元格地址范围（如 B3：F12）
+*/
+export function add(operands: any[][][]): number {
+  let total: number = 0;
+  operands.forEach(range => {
+    range.forEach(row => {
+      row.forEach(num => {
+        if(typeof(num)==='number') total+=num;
+      });
+    });
+  });
+  return total;
 }
 
 /**
