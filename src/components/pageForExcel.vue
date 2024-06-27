@@ -23,7 +23,6 @@
 </template>
 
 <script setup lang="ts">
-Office.onReady()
 function onSetColor() {
   window.Excel.run(async context => {
     const range = context.workbook.getSelectedRange();
